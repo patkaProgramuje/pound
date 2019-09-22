@@ -6,6 +6,7 @@ import com.patrycja.pound.models.domain.Zookeeper;
 import com.patrycja.pound.models.dto.ZookeeperDTO;
 import com.patrycja.pound.repository.ZookeeperRepository;
 import com.patrycja.pound.services.mappers.ZookeeperMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,11 +24,16 @@ import static org.mockito.Mockito.*;
 public class ZookeeperServiceTest {
 
     @Mock
-    ZookeeperRepository zookeeperRepository;
+    private ZookeeperRepository zookeeperRepository;
     @Mock
-    ZookeeperMapper zookeeperMapper;
-    @InjectMocks
-    ZookeeperService zookeeperService;
+    private ZookeeperMapper zookeeperMapper;
+
+    private ZookeeperService zookeeperService;
+
+    @Before
+    public void setUp() {
+        zookeeperService = new ZookeeperService(zookeeperRepository, zookeeperMapper);
+    }
 
     @Test
     public void getZookeepersShouldReturnAllZookeepers() {
@@ -35,11 +41,13 @@ public class ZookeeperServiceTest {
         Zookeeper zookeeper = getZookeeper();
         zookeepers.add(zookeeper);
         ZookeeperDTO zookeeperDTO = getZookeeperDTO();
+
         when(zookeeperRepository.findAll()).thenReturn(zookeepers);
         when(zookeeperMapper.map(zookeeper)).thenReturn(zookeeperDTO);
         List<ZookeeperDTO> zookeepersList = zookeeperService.getZookeepers();
-        assertThat(zookeepersList.size()).isEqualTo(1);
         ZookeeperDTO actual = zookeepersList.get(0);
+
+        assertThat(zookeepersList.size()).isEqualTo(1);
         assertThat(actual).isNotNull();
     }
 
@@ -48,8 +56,10 @@ public class ZookeeperServiceTest {
         Zookeeper zookeeper = getZookeeper();
         ZookeeperDTO zookeeperDTO = getZookeeperDTOWithSurnamePerkins();
         int id = 1;
+
         when(zookeeperRepository.getOne(id)).thenReturn(zookeeper);
         zookeeperService.updateZookeeper(id, zookeeperDTO);
+
         verify(zookeeperRepository).save(zookeeper);
         assertThat(zookeeper.getSurname()).isEqualTo(zookeeperDTO.getSurname());
     }
@@ -58,8 +68,10 @@ public class ZookeeperServiceTest {
     public void addZookeeperShouldAddZookeeperToRepository() {
         ZookeeperDTO zookeeperDTO = getZookeeperDTO();
         Zookeeper zookeeper = getZookeeper();
+
         when(zookeeperMapper.map(zookeeperDTO)).thenReturn(zookeeper);
         zookeeperService.addZookeeper(zookeeperDTO);
+
         verify(zookeeperRepository).save(zookeeper);
     }
 
@@ -70,9 +82,11 @@ public class ZookeeperServiceTest {
         Zookeeper zookeeper = getZookeeper();
         zookeeper.setAnimals(animals);
         zookeepers.add(zookeeper);
-        when(zookeeperRepository.findAll()).thenReturn(zookeepers);
         Animal animal = animals.get(0);
+
+        when(zookeeperRepository.findAll()).thenReturn(zookeepers);
         zookeeperService.deleteAnimalFromZookeeper(animal);
+
         assertThat(zookeeper.getAnimals().size()).isEqualTo(0);
     }
 
@@ -82,9 +96,11 @@ public class ZookeeperServiceTest {
         List<Animal> animals = new ArrayList<>();
         zookeeper.setAnimals(animals);
         Dog dog = getAnimalWithIdOneNumberOfToothSixNamePimpekAndAgeFour();
-        zookeeperService.saveAnimalToZookeeper(dog, zookeeper);
-        verify(zookeeperRepository).save(zookeeper);
         Animal actual = zookeeper.getAnimals().get(0);
+
+        zookeeperService.saveAnimalToZookeeper(dog, zookeeper);
+
+        verify(zookeeperRepository).save(zookeeper);
         assertThat(actual).isEqualTo(dog);
     }
 
@@ -95,8 +111,10 @@ public class ZookeeperServiceTest {
         Animal animal = getAnimalWithIdOneNumberOfToothSixNamePimpekAndAgeFour();
         zookeeper.setAnimals(Collections.singletonList(animal));
         zookeeperList.add(zookeeper);
+
         when(zookeeperRepository.findAll()).thenReturn(zookeeperList);
         Zookeeper freeZookeeper = zookeeperService.findFreeZookeeper();
+
         assertThat(freeZookeeper).isNotNull();
     }
 

@@ -5,9 +5,9 @@ import com.patrycja.pound.models.domain.Zookeeper;
 import com.patrycja.pound.models.dto.DogDTO;
 import com.patrycja.pound.repository.DogRepository;
 import com.patrycja.pound.services.mappers.DogMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -22,23 +22,29 @@ import static org.mockito.Mockito.when;
 public class DogServiceTest {
 
     @Mock
-    DogRepository dogRepository;
+    private DogRepository dogRepository;
     @Mock
-    DogMapper dogMapper;
+    private DogMapper dogMapper;
     @Mock
-    ZookeeperService zookeeperService;
+    private ZookeeperService zookeeperService;
 
-    @InjectMocks
-    DogService dogService;
+    private DogService dogService;
+
+    @Before
+    public void setUp() {
+        dogService = new DogService(dogRepository, dogMapper, zookeeperService);
+    }
 
     @Test
     public void addDogShouldCreateNewDog() {
         Dog dog = getDog();
         DogDTO dogDTO = getDogDTO();
         Zookeeper zookeeper = getZookeeper();
+
         when(dogMapper.map(dogDTO)).thenReturn(dog);
         when(zookeeperService.findFreeZookeeper()).thenReturn(zookeeper);
         dogService.addDog(dogDTO);
+
         verify(dogRepository).save(dog);
         verify(zookeeperService).saveAnimalToZookeeper(dog, zookeeper);
     }
@@ -48,8 +54,10 @@ public class DogServiceTest {
         Dog dog = getDog();
         DogDTO dogDTO = getDogDTOWithIdOneNumberOfToothFourAgeThreeAndNamePimpek();
         int id = 1;
+
         when(dogRepository.getOne(id)).thenReturn(dog);
         dogService.updateDog(id, dogDTO);
+
         verify(dogRepository).save(dog);
         assertThat(dog.getName()).isEqualTo(dogDTO.getName());
     }
@@ -60,9 +68,23 @@ public class DogServiceTest {
         Dog dog = getDog();
         DogDTO dogDTO = getDogDTO();
         dogList.add(dog);
+
         when(dogRepository.findAll()).thenReturn(dogList);
         when(dogMapper.map(dog)).thenReturn(dogDTO);
+
         assertThat(dogList.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void deleteDogShouldDeleteDogFromRepositoryAndZookeeperListOfAnimals() {
+        Dog dog = getDog();
+        int id = 1;
+
+        when(dogRepository.getOne(id)).thenReturn(dog);
+        dogService.deleteDog(id);
+
+        verify(zookeeperService).deleteAnimalFromZookeeper(dog);
+        verify(dogRepository).deleteById(id);
     }
 
     private DogDTO getDogDTOWithIdOneNumberOfToothFourAgeThreeAndNamePimpek() {
@@ -71,16 +93,6 @@ public class DogServiceTest {
         dog.setAge(3);
         dog.setNumberOfTooth(4);
         return dog;
-    }
-
-    @Test
-    public void deleteDogShouldDeleteDogFromRepositoryAndZookeeperListOfAnimals() {
-        Dog dog = getDog();
-        int id = 1;
-        when(dogRepository.getOne(id)).thenReturn(dog);
-        dogService.deleteDog(id);
-        verify(zookeeperService).deleteAnimalFromZookeeper(dog);
-        verify(dogRepository).deleteById(id);
     }
 
     private Dog getDog() {

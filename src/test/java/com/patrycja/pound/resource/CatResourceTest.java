@@ -3,7 +3,6 @@ package com.patrycja.pound.resource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.patrycja.pound.enums.CatColor;
 import com.patrycja.pound.models.domain.Cat;
-import com.patrycja.pound.models.domain.Zookeeper;
 import com.patrycja.pound.models.dto.CatDTO;
 import com.patrycja.pound.services.CatService;
 import org.junit.Before;
@@ -28,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CatResourceTest {
 
     private MockMvc mockMvc;
+
     @Mock
     private CatService catService;
 
@@ -41,13 +41,15 @@ public class CatResourceTest {
         List<CatDTO> catDTOList = new ArrayList<>();
         CatDTO catDTO = getCatDTO();
         catDTOList.add(catDTO);
+        String sort = "sort";
+
         when(catService.getAllCats("sort")).thenReturn(catDTOList);
-        String json = "[{\"id\":2,\"name\":\"Ania\",\"age\":77,\"color\":\"BLACK\",\"zookeeperName\":\"Maja\"}]";
+
         mockMvc.perform(get("/cats")
-                .param("sort", "sort")
+                .param("sort", sort)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(json)));
+                .andExpect(content().string(containsString(asJsonString(getCatDTO()))));
     }
 
     @Test
@@ -56,18 +58,28 @@ public class CatResourceTest {
         CatDTO catDTOBlack = getCatDTO();
         catDTOList.add(catDTOBlack);
         String color = "BLACK";
+
         when(catService.getCatByColor(color)).thenReturn(catDTOList);
-        String json = "[{\"id\":2,\"name\":\"Ania\",\"age\":77,\"color\":\"BLACK\",\"zookeeperName\":\"Maja\"}]";
-        mockMvc.perform(get("/cats/colors/{color}",color).contentType(MediaType.APPLICATION_JSON))
+
+        mockMvc.perform(get("/cats/colors/{color}", color)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(json)));
+                .andExpect(content().string(containsString(asJsonString(getCatDTO()))));
     }
 
     @Test
     public void postCatShouldCreateNewCat() throws Exception {
         mockMvc.perform(post("/cats")
-        .content(asJsonString(new Cat("Masza", 21, CatColor.PINK)))
-        .contentType(MediaType.APPLICATION_JSON))
+                .content(asJsonString(getCatMaszaAndAgeTwentyOneAndColorPink()))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void updateCatShouldUpdateCatData() throws Exception {
+        mockMvc.perform(put("/cats/{id}", 1)
+                .content(asJsonString(getCatMaszaAndAgeTwentyOneAndColorPink()))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
@@ -77,23 +89,6 @@ public class CatResourceTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
-
-    @Test
-    public void updateCatShouldUpdateCatData() throws Exception {
-        mockMvc.perform(put("/cats/{id}", 1)
-                .content(asJsonString(new Cat("Kuba", 22, CatColor.BLACK)))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    public static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     private CatDTO getCatDTO() {
         return CatDTO.builder()
@@ -105,21 +100,15 @@ public class CatResourceTest {
                 .build();
     }
 
-    private CatDTO getCatDTOWithPinkColor() {
-        return CatDTO.builder()
-                .id(2)
-                .name("Ania")
-                .color(CatColor.PINK)
-                .age(77)
-                .zookeeperName("Maja")
-                .build();
+    public static String asJsonString(final Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private Zookeeper getZookeeperMaja() {
-        return Zookeeper.builder()
-                .name("Maja")
-                .build();
+    private Cat getCatMaszaAndAgeTwentyOneAndColorPink() {
+        return new Cat("Masza", 21, CatColor.PINK);
     }
-
-
 }

@@ -4,9 +4,9 @@ import com.patrycja.pound.models.domain.Animal;
 import com.patrycja.pound.models.dto.AnimalDTO;
 import com.patrycja.pound.repository.AnimalRepository;
 import com.patrycja.pound.services.mappers.AnimalMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -20,12 +20,16 @@ import static org.mockito.Mockito.when;
 public class AnimalServiceTest {
 
     @Mock
-    AnimalMapper animalMapper;
+    private AnimalMapper animalMapper;
     @Mock
-    AnimalRepository animalRepository;
+    private AnimalRepository animalRepository;
 
-    @InjectMocks
-    AnimalService animalService;
+    private AnimalService animalService;
+
+    @Before
+    public void setUp() {
+        animalService = new AnimalService(animalMapper, animalRepository);
+    }
 
     @Test
     public void getAnimalsShouldReturnListOfAnimals() {
@@ -33,9 +37,11 @@ public class AnimalServiceTest {
         Animal animal = new Animal();
         animalList.add(animal);
         AnimalDTO animalDTO = new AnimalDTO();
+
         when(animalRepository.findAll()).thenReturn(animalList);
         when(animalMapper.map(animal)).thenReturn(animalDTO);
         List<AnimalDTO> animals = animalService.getAnimals();
+
         assertThat(animals.size()).isEqualTo(1);
         assertThat(animals.get(0)).isEqualTo(animalDTO);
     }
