@@ -1,14 +1,12 @@
 package com.patrycja.pound.services;
 
 import com.patrycja.pound.enums.CatColor;
-import com.patrycja.pound.models.domain.Animal;
 import com.patrycja.pound.models.domain.Cat;
-import com.patrycja.pound.models.domain.Dog;
 import com.patrycja.pound.models.domain.Zookeeper;
 import com.patrycja.pound.models.dto.CatDTO;
 import com.patrycja.pound.repository.CatRepository;
-import com.patrycja.pound.repository.ZookeeperRepository;
 import com.patrycja.pound.services.mappers.CatMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -16,33 +14,38 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CatServiceTest {
 
     @Mock
-    CatRepository catRepository;
+    private CatRepository catRepository;
     @Mock
-    CatMapper catMapper;
+    private CatMapper catMapper;
     @Mock
-    ZookeeperService zookeeperService;
-    @Mock
-    ZookeeperRepository zookeeperRepository;
-    @InjectMocks
-    CatService catService;
+    private ZookeeperService zookeeperService;
+
+    private CatService catService;
+
+    @Before
+    public void setUp() {
+        catService = new CatService(catRepository, catMapper, zookeeperService);
+    }
 
     @Test
     public void getCatByIdShouldReturnCat() {
         int id = 1;
         Cat cat = getCat();
+
         when(catRepository.findById(id)).thenReturn(Optional.of(cat));
         Cat catById = catService.getCatById(id);
+
         assertThat(catById).isEqualTo(cat);
     }
 
@@ -51,11 +54,13 @@ public class CatServiceTest {
         CatDTO catDTO = createCatDTOWithNamePimpekAgeTwelveAndColorGrey();
         int id = 1;
         Cat cat = getCat();
-        when(catRepository.findById(id)).thenReturn(Optional.of(cat));
         cat.setAge(catDTO.getAge());
         cat.setName(catDTO.getName());
         cat.setColor(catDTO.getColor());
+
+        when(catRepository.findById(id)).thenReturn(Optional.of(cat));
         catService.updateCat(id, catDTO);
+
         verify(catRepository).save(cat);
     }
 
@@ -63,8 +68,10 @@ public class CatServiceTest {
     public void getCatNameShouldReturnCatName() {
         int id = 1;
         Cat cat = getCatWithIdOneAndNamePimpek();
+
         when(catRepository.findById(id)).thenReturn(Optional.of(cat));
         String foundCatName = catService.getCatName(id);
+
         assertThat(foundCatName).isNotEqualTo(null);
         assertThat(foundCatName).isEqualTo(cat.getName());
     }
@@ -73,11 +80,13 @@ public class CatServiceTest {
     public void addCatShouldCreateNewCat() {
         CatDTO catDTO = createCatDTOWithNamePimpekAgeTwelveAndColorGrey();
         Cat cat = getCat();
-        when(catMapper.map(catDTO)).thenReturn(cat);
         Zookeeper zookeeper = new Zookeeper();
-        when(zookeeperService.findFreeZookeeper()).thenReturn(zookeeper);
         cat.setZookeeper(zookeeper);
         catService.addCat(catDTO);
+
+        when(catMapper.map(catDTO)).thenReturn(cat);
+        when(zookeeperService.findFreeZookeeper()).thenReturn(zookeeper);
+
         verify(catRepository).save(cat);
         verify(zookeeperService).saveAnimalToZookeeper(cat, zookeeper);
     }
@@ -89,6 +98,7 @@ public class CatServiceTest {
 
         when(catRepository.getOne(id)).thenReturn(cat);
         catService.deleteCat(id);
+
         verify(zookeeperService).deleteAnimalFromZookeeper(cat);
         verify(catRepository).delete(cat);
     }
@@ -101,9 +111,11 @@ public class CatServiceTest {
         int expected = 1;
         Cat cat = getCat();
         list.add(cat);
+
         when(catRepository.findAll()).thenReturn(list);
         when(catMapper.map(cat)).thenReturn(catDTO);
         List<CatDTO> catByColor = catService.getCatByColor(pink);
+
         assertThat(catByColor.size()).isEqualTo(expected);
         assertThat(catByColor.get(0).getColor().toString()).isEqualTo(pink);
     }

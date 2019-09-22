@@ -1,6 +1,5 @@
 package com.patrycja.pound.resource;
 
-import com.patrycja.pound.models.domain.Dog;
 import com.patrycja.pound.models.dto.DogDTO;
 import com.patrycja.pound.services.DogService;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +25,12 @@ public class DogResource {
     }
 
     @GetMapping
-    public List<DogDTO> get(){
+    public List<DogDTO> get() {
         return dogService.getDogs();
     }
 
     @PutMapping("/{id}")
-    public String update(@PathVariable("id") int id, @RequestBody DogDTO dogDTO){
+    public String update(@PathVariable("id") int id, @RequestBody DogDTO dogDTO) {
         return dogService.updateDog(id, dogDTO);
     }
 }

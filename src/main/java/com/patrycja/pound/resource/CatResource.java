@@ -2,8 +2,6 @@ package com.patrycja.pound.resource;
 
 import com.patrycja.pound.models.dto.CatDTO;
 import com.patrycja.pound.services.CatService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,8 +10,11 @@ import java.util.List;
 @RequestMapping("/cats")
 public class CatResource {
 
-    @Autowired
     private CatService catService;
+
+    public CatResource(CatService catService) {
+        this.catService = catService;
+    }
 
     @GetMapping
     public List<CatDTO> getListAllCats(@RequestParam(value = "sort", defaultValue = "") String sort) {
@@ -31,12 +32,12 @@ public class CatResource {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCat(@PathVariable("id") int id) {
+    public String deleteCat(@PathVariable("id") int id) {
         return catService.deleteCat(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateCat(@PathVariable("id") int id, @RequestBody CatDTO catDTO) {
+    public String updateCat(@PathVariable("id") int id, @RequestBody CatDTO catDTO) {
         return catService.updateCat(id, catDTO);
     }
 }

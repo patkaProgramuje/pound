@@ -21,7 +21,6 @@ public class CatService {
     private final CatRepository catRepository;
     private final CatMapper catMapper;
     private final ZookeeperService zookeeperService;
-    private final AnimalService animalService;
 
     public List<CatDTO> getAllCats(String sort) {
         List<Cat> cats = catRepository.findAll();
