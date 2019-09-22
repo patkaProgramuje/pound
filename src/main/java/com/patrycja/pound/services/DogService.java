@@ -19,7 +19,6 @@ public class DogService {
     private final DogRepository dogRepository;
     private final DogMapper dogMapper;
     private final ZookeeperService zookeeperService;
-    private final AnimalService animalService;
 
     public String addDog(DogDTO dogDTO) {
         Dog dog = dogMapper.map(dogDTO);
