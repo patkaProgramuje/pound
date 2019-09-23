@@ -7,6 +7,7 @@ import com.patrycja.pound.models.dto.CatDTO;
 import com.patrycja.pound.repository.CatRepository;
 import com.patrycja.pound.services.mappers.CatMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +49,8 @@ public class CatService {
         cat.setZookeeper(zookeeper);
         catRepository.save(cat);
         zookeeperService.saveAnimalToZookeeper(cat, zookeeper);
-        return ResponseEntity.ok("Successfully added kitty").toString();
+        //return ResponseEntity.ok("Successfully added kitty").toString();
+        return ResponseEntity.status(HttpStatus.CREATED).body("Successfully added kitty").toString();
     }
 
     public String deleteCat(int id) {
